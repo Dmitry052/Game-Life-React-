@@ -16,17 +16,24 @@ class App extends Component {
     const posY = Math.floor(e.clientY / 20) * this.props.field.paramGrid.valueN / 20;
     const currentPos = posX + posY;
 
-    const x = posX * 20 - 10;
-    const y = (Math.floor(e.clientY / 20)) * 20 + 10;
-    ctx.beginPath()
-    ctx.lineWidth = 1;
-    ctx.arc(x, y, 8, 20, Math.PI, true);
-    ctx.fill();
-    ctx.stroke();
+    this.props.currentCell(currentPos - 1);
+    this.clear();
+    for (let i = 0; i < this.props.field.paramGrid.map.length; i++) {
+      if (this.props.field.paramGrid.map[i] === 1) {
+        const x = (i % (this.props.field.paramGrid.valueN / 20)) * 20 + 10;
+        const y = ~~(i / (this.props.field.paramGrid.valueN / 20)) * 20 + 10;
+        ctx.beginPath()
+        ctx.lineWidth = 1;
+        ctx.arc(x, y, 8, 20, Math.PI, true);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+    }
   }
-  setParams() {
-    this.props.createField();
+  drawField() {
     const ctx = this.refs.canvas.getContext('2d');
+    ctx.beginPath();
     const n = this.props.field.paramGrid.valueN;
     const m = this.props.field.paramGrid.valueM;
     ctx.strokeStyle = "#000";
@@ -44,8 +51,15 @@ class App extends Component {
       ctx.lineWidth = 1;
       ctx.stroke();
     }
-
-
+  }
+  setParams() {
+    this.props.createField();
+    this.drawField();
+  }
+  clear() {
+    const ctx = this.refs.canvas.getContext('2d');
+    ctx.clearRect(0, 0, this.props.field.paramGrid.valueN, this.props.field.paramGrid.valueM);
+    this.drawField();
   }
   render() {
     // console.log(this.props.field);
@@ -77,6 +91,9 @@ export default connect(
     },
     setValueM: (value) => {
       dispatch({ type: 'SET_VALUE_M', data: value });
+    },
+    currentCell: (value) => {
+      dispatch({ type: 'SET_CELL_VALUE', data: value });
     },
 
   })

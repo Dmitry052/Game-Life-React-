@@ -16,7 +16,7 @@ export default function fintEvents(state = initialState, action) {
         }
     }
     if (action.type === 'SHOW_MODAL') {
-        state.showModal = !state.showModal;
+        state.showModal = false;
         let len = (state.paramGrid.valueN / 20) * (state.paramGrid.valueM / 20)
         for (let i = 0; i < (len); i++) {
             state.paramGrid.map[i] = 0;
@@ -40,5 +40,13 @@ export default function fintEvents(state = initialState, action) {
             paramGrid: state.paramGrid
         }
     }
+    if (action.type === 'SET_CELL_VALUE') {
+        state.paramGrid.map[action.data] = state.paramGrid.map[action.data] === 0 ? 1 : 0;
+        return {
+            showModal: state.showModal,
+            paramGrid: state.paramGrid
+        }
+    }
+
     return state;
 }

@@ -3,6 +3,12 @@ import { connect } from 'react-redux';
 import Modal from 'react-modal';
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      timer: ''
+    }
+  }
   setValueN(e) {
     this.props.setValueN(e.target.value * 20);
   }
@@ -16,8 +22,14 @@ class App extends Component {
     const posY = Math.floor(e.clientY / 20) * this.props.field.paramGrid.valueN / 20;
     const currentPos = posX + posY;
 
-    this.props.currentCell(currentPos - 1);
-    this.clear();
+    if (this.props.field.paramGrid.editStatus) {
+      this.props.currentCell(currentPos - 1);
+      this.clear();
+      this.drawCells();
+    }
+  }
+  drawCells() {
+    const ctx = this.refs.canvas.getContext('2d');
     for (let i = 0; i < this.props.field.paramGrid.map.length; i++) {
       if (this.props.field.paramGrid.map[i] === 1) {
         const x = (i % (this.props.field.paramGrid.valueN / 20)) * 20 + 10;
@@ -61,11 +73,30 @@ class App extends Component {
     ctx.clearRect(0, 0, this.props.field.paramGrid.valueN, this.props.field.paramGrid.valueM);
     this.drawField();
   }
+  stop() {
+    clearInterval(this.state.timer);
+  }
+  start() {
+    this.props.editStatus();
+    var game = setInterval(() => {
+      this.props.nextGen();
+      this.clear();
+      this.drawCells();
+      this.setState({
+        timer: game
+      })
+      if (this.props.field.paramGrid.stop) {
+
+        clearInterval(game);
+        this.props.editStatus();
+        alert("Game over");
+      }
+    }, 200);
+  }
   render() {
-    // console.log(this.props.field);
     return (
       <div className="App">
-        <Modal isOpen={this.props.field.showModal} style={{ content: { width: '600px', border: 0, margin: 'auto', 'backgroundColor': '#f5f5f5', height: '40px' } }}>
+        <Modal isOpen={this.props.field.showModal} style={{ content: { width: '600px', border: 0, margin: 'auto', 'backgroundColor': '#f5f5f5', width: '460px', height: '65px' } }}>
           <span>Введите размеры N и M игрового поля</span>
           <div id="start">
             <input type="number" defaultValue={this.props.field.paramGrid.valueN} onChange={this.setValueN.bind(this)} />
@@ -74,6 +105,11 @@ class App extends Component {
           </div>
         </Modal>
         <canvas ref="canvas" width={this.props.field.paramGrid.valueN} height={this.props.field.paramGrid.valueM} onClick={this.location.bind(this)}></canvas>
+        <div style={{ display: this.props.field.paramGrid.btn }} className="btn">
+          <button disabled={this.props.field.paramGrid.btnStart} onClick={this.start.bind(this)}>Старт</button>
+          <button disabled={this.props.field.paramGrid.btnStart} onClick={this.stop.bind(this)}>Стоп</button>
+          <button disabled={this.props.field.paramGrid.btnStart} onClick={this.start.bind(this)}>Очистить</button>
+        </div>
       </div>
     );
   }
@@ -95,6 +131,11 @@ export default connect(
     currentCell: (value) => {
       dispatch({ type: 'SET_CELL_VALUE', data: value });
     },
-
+    editStatus: () => {
+      dispatch({ type: 'EDIT_STATUS' });
+    },
+    nextGen: () => {
+      dispatch({ type: 'NEXT_GENERATION' });
+    }
   })
 )(App);

@@ -9,6 +9,11 @@ class App extends Component {
       timer: ''
     }
   }
+  newField() {
+    const ctx = this.refs.canvas.getContext('2d');
+    ctx.clearRect(0, 0, this.props.field.paramGrid.valueN, this.props.field.paramGrid.valueM);
+    this.props.newField();
+  }
   setValueN(e) {
     this.props.setValueN(e.target.value * 20);
   }
@@ -65,16 +70,27 @@ class App extends Component {
     }
   }
   setParams() {
-    this.props.createField();
-    this.drawField();
+    if (this.props.field.paramGrid.valueN / 20 > 40 || this.props.field.paramGrid.valueM / 20 > 40) {
+      alert("Укажите диапазон не превышающий 40x40 клеток");
+    }
+    else {
+      this.props.createField();
+      this.props.clear();
+      this.drawField();
+    }
   }
   clear() {
     const ctx = this.refs.canvas.getContext('2d');
     ctx.clearRect(0, 0, this.props.field.paramGrid.valueN, this.props.field.paramGrid.valueM);
     this.drawField();
   }
+  clear_cells() {
+    this.clear();
+    this.props.clear();
+  }
   stop() {
     clearInterval(this.state.timer);
+    this.props.editStatus();
   }
   start() {
     this.props.editStatus();
@@ -82,21 +98,21 @@ class App extends Component {
       this.props.nextGen();
       this.clear();
       this.drawCells();
-      this.setState({
-        timer: game
-      })
-      if (this.props.field.paramGrid.stop) {
 
+      if (this.props.field.paramGrid.stop) {
         clearInterval(game);
         this.props.editStatus();
         alert("Game over");
       }
-    }, 200);
+    }, 400);
+    this.setState({
+      timer: game
+    });
   }
   render() {
     return (
       <div className="App">
-        <Modal isOpen={this.props.field.showModal} style={{ content: { width: '600px', border: 0, margin: 'auto', 'backgroundColor': '#f5f5f5', width: '460px', height: '65px' } }}>
+        <Modal isOpen={this.props.field.showModal} style={{ content: { width: '600px', border: 0, margin: 'auto', 'backgroundColor': '#f5f5f5', width: '500px', height: '70px' } }}>
           <span>Введите размеры N и M игрового поля</span>
           <div id="start">
             <input type="number" defaultValue={this.props.field.paramGrid.valueN} onChange={this.setValueN.bind(this)} />
@@ -107,8 +123,9 @@ class App extends Component {
         <canvas ref="canvas" width={this.props.field.paramGrid.valueN} height={this.props.field.paramGrid.valueM} onClick={this.location.bind(this)}></canvas>
         <div style={{ display: this.props.field.paramGrid.btn }} className="btn">
           <button disabled={this.props.field.paramGrid.btnStart} onClick={this.start.bind(this)}>Старт</button>
-          <button disabled={this.props.field.paramGrid.btnStart} onClick={this.stop.bind(this)}>Стоп</button>
-          <button disabled={this.props.field.paramGrid.btnStart} onClick={this.start.bind(this)}>Очистить</button>
+          <button disabled={this.props.field.paramGrid.btnStop} onClick={this.stop.bind(this)}>Стоп</button>
+          <button disabled={this.props.field.paramGrid.btnClear} onClick={this.clear_cells.bind(this)}>Очистить</button>
+          <button disabled={this.props.field.paramGrid.btnNewFiled} onClick={this.newField.bind(this)}>Создать новое поле</button>
         </div>
       </div>
     );
@@ -119,8 +136,14 @@ export default connect(
     field: state.field
   }),
   dispatch => ({
+    newField: () => {
+      dispatch({ type: 'NEW_FIELD' });
+    },
     createField: () => {
       dispatch({ type: 'SHOW_MODAL' });
+    },
+    clear: () => {
+      dispatch({ type: 'CLEAR' });
     },
     setValueN: (value) => {
       dispatch({ type: 'SET_VALUE_N', data: value });

@@ -3,7 +3,12 @@ const initialState = {
     paramGrid: {
         btn: 'none',
         editStatus: true,
+
         btnStart: false,
+        btnStop: true,
+        btnClear: false,
+        btnNewFiled: false,
+
         stop: false,
         count: 0,
         valueN: 0,
@@ -22,9 +27,26 @@ export default function fintEvents(state = initialState, action) {
             paramGrid: state.paramGrid
         }
     }
+    if (action.type === 'NEW_FIELD') {
+        state.paramGrid.valueN = 0;
+        state.paramGrid.valueM = 0;
+        state.showModal = true;
+        state.paramGrid.btn = 'none';
+
+        return {
+            showModal: state.showModal,
+            paramGrid: state.paramGrid
+        }
+    }
     if (action.type === 'SHOW_MODAL') {
         state.showModal = false;
         state.paramGrid.btn = '';
+        return {
+            showModal: state.showModal,
+            paramGrid: state.paramGrid
+        }
+    }
+    if (action.type === 'CLEAR') {
         let len = (state.paramGrid.valueN / 20) * (state.paramGrid.valueM / 20)
         for (let i = 0; i < (len); i++) {
             state.paramGrid.map[i] = 0;
@@ -56,6 +78,11 @@ export default function fintEvents(state = initialState, action) {
         }
     }
     if (action.type === 'EDIT_STATUS') {
+        state.paramGrid.btnStart = !state.paramGrid.btnStart;
+        state.paramGrid.btnStop = !state.paramGrid.btnStop;
+        state.paramGrid.btnClear = !state.paramGrid.btnClear;
+        state.paramGrid.btnNewFiled = !state.paramGrid.btnNewFiled;
+
         state.paramGrid.stop = false;
         state.paramGrid.count = 0;
 
@@ -77,6 +104,7 @@ export default function fintEvents(state = initialState, action) {
         }
         // Перебираем текущий массив
         for (let i = 0; i < state.paramGrid.map.length; i++) {
+            // ищем индексы соседей
             let topC = (() => {
                 if (i - n < 0 && i !== n) {
                     return (n * m) + (i - n);
@@ -178,13 +206,15 @@ export default function fintEvents(state = initialState, action) {
             state.paramGrid.map[m] === 1 ? countLive++ : countLive;
         }
         // Если все мёртвые
-        if (countLive === 0) { state.paramGrid.stop = !state.paramGrid.stop; }
+        if (countLive === 0) { console.log("все мёртвые"); state.paramGrid.stop = true; }
         // // Если новое поколение повторяет предыдущее 
         let countRepeat = 0
         for (let m = 0; m < state.paramGrid.map.length; m++) {
             state.paramGrid.map[m] !== state.paramGrid.oldMap[m] ? countRepeat++ : "";
         }
-        if (countRepeat === 0) { state.paramGrid.stop = !state.paramGrid.stop; }
+        if (countRepeat === 0) { console.log("повтор"); state.paramGrid.stop = true; }
+
+
         return {
             showModal: state.showModal,
             paramGrid: state.paramGrid

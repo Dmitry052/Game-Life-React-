@@ -18,9 +18,6 @@ class App extends Component {
   clear_cells() {
     this.props.createField();
   }
-  // newField() {
-  //   this.props.newField();
-  // }
   setValueN(e) {
     this.props.setValueN(e.target.value);
   }
@@ -88,9 +85,6 @@ export default connect(
     setCell: (cell) => {
       dispatch({ type: 'SET_CELL', data: cell });
     },
-    // newField: () => {
-    //   dispatch({ type: 'NEW_FIELD' });
-    // },
     createField: () => {
       dispatch({ type: 'CREATE_FIELD' });
     },

@@ -44,16 +44,6 @@ export default function fintEvents(state = initialState, action) {
             paramGrid: state.paramGrid,
         }
     }
-    // if (action.type === 'NEW_FIELD') {
-    //     state.showModal = true;
-    //     state.paramGrid.btn = 'none';
-    //     state.showField = 'none';
-    //     return {
-    //         showModal: state.showModal,
-    //         showField: state.showField,
-    //         paramGrid: state.paramGrid,
-    //     }
-    // }
     if (action.type === 'VALUE_VH_TD') {
         state.paramGrid.valueWH = action.data;
         return {

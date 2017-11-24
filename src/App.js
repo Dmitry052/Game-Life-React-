@@ -5,7 +5,7 @@ import Modal from 'react-modal';
 class App extends Component {
   start() {
     var game = setInterval(() => {
-      this.props.nextGeneration();
+      this.props.nextGeneration(game);
       if (this.props.field.paramGrid.stop) {
         clearInterval(game);
         alert("Game over");
@@ -13,19 +13,22 @@ class App extends Component {
     }, 200);
   }
   stop() {
-
+    clearInterval(this.props.field.paramGrid.game);
   }
   clear_cells() {
-
+    this.props.createField();
   }
-  newField() {
-
-  }
+  // newField() {
+  //   this.props.newField();
+  // }
   setValueN(e) {
     this.props.setValueN(e.target.value);
   }
   setValueM(e) {
-    this.props.setValueM(e.target.value)
+    this.props.setValueM(e.target.value);
+  }
+  setValueWH(e) {
+    this.props.setValueWH(e.target.value);
   }
   setCell(e) {
     this.props.setCell({ n: e.target.getAttribute('data-n'), m: e.target.getAttribute('data-m') });
@@ -34,9 +37,10 @@ class App extends Component {
     this.props.createField();
   }
   render() {
+    console.log(this.props.field.paramGrid.valueWH);
     return (
       <div className="App">
-        <Modal isOpen={this.props.field.showModal} style={{ content: { width: '600px', border: 0, margin: 'auto', 'backgroundColor': '#f5f5f5', width: '500px', height: '70px' } }}>
+        <Modal isOpen={this.props.field.showModal} style={{ content: { width: '600px', border: 0, margin: 'auto', 'backgroundColor': '#f5f5f5', height: '70px' } }}>
           <span>Введите размеры N и M игрового поля</span>
           <div id="start">
             <input type="number" defaultValue={this.props.field.paramGrid.valueN} onChange={this.setValueN.bind(this)} />
@@ -48,7 +52,6 @@ class App extends Component {
           <button disabled={this.props.field.paramGrid.btnStart} onClick={this.start.bind(this)}>Старт</button>
           <button disabled={this.props.field.paramGrid.btnStop} onClick={this.stop.bind(this)}>Стоп</button>
           <button disabled={this.props.field.paramGrid.btnClear} onClick={this.clear_cells.bind(this)}>Очистить</button>
-          <button disabled={this.props.field.paramGrid.btnNewFiled} onClick={this.newField.bind(this)}>Создать новое поле</button>
         </div>
         <span id="generation">Количество поколений: {this.props.field.paramGrid.countGeneration}
         </span>
@@ -85,10 +88,16 @@ export default connect(
     setCell: (cell) => {
       dispatch({ type: 'SET_CELL', data: cell });
     },
+    // newField: () => {
+    //   dispatch({ type: 'NEW_FIELD' });
+    // },
     createField: () => {
       dispatch({ type: 'CREATE_FIELD' });
     },
-    nextGeneration: () => {
+    nextGeneration: (game) => {
+      dispatch({ type: 'NEXT_GENERATION', data: game });
+    },
+    stop: () => {
       dispatch({ type: 'NEXT_GENERATION' });
     }
   })

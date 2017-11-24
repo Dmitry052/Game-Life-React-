@@ -2,12 +2,15 @@ const initialState = {
     showModal: true,
     showField: 'none',
     paramGrid: {
+        valueWH: 20,
+
         btn: 'none',
         btnStart: false,
         btnStop: false,
         btnClear: false,
         btnNewFiled: false,
 
+        game: '',
         countGeneration: 0,
         stop: false,
 
@@ -41,7 +44,26 @@ export default function fintEvents(state = initialState, action) {
             paramGrid: state.paramGrid,
         }
     }
+    // if (action.type === 'NEW_FIELD') {
+    //     state.showModal = true;
+    //     state.paramGrid.btn = 'none';
+    //     state.showField = 'none';
+    //     return {
+    //         showModal: state.showModal,
+    //         showField: state.showField,
+    //         paramGrid: state.paramGrid,
+    //     }
+    // }
+    if (action.type === 'VALUE_VH_TD') {
+        state.paramGrid.valueWH = action.data;
+        return {
+            showModal: state.showModal,
+            showField: state.showField,
+            paramGrid: state.paramGrid,
+        }
+    }
     if (action.type === 'CREATE_FIELD') {
+        state.paramGrid.countGeneration = 0;
         state.paramGrid.btn = '';
         state.showModal = false;
         state.showField = '';
@@ -58,22 +80,14 @@ export default function fintEvents(state = initialState, action) {
         }
     }
     if (action.type === 'NEXT_GENERATION') {
+        state.paramGrid.game = action.data;
         state.paramGrid.countGeneration++;
         state.paramGrid.stop = false;
-        // Копируем старые массив
-        const oldGeneration = (() => {
-            let arr = [];
-            for (let i = 0; i < state.paramGrid.field.length; i++) {
-                arr[i] = [];
-                for (let j = 0; j < state.paramGrid.field[i].length; j++) {
-                    arr[i][j] = state.paramGrid.field[i][j];
-                }
-            }
-            return arr;
-        })();
 
+        let newGeneration = [];
         let allLive = 0;
         for (let i = 0; i < state.paramGrid.field.length; i++) {
+            newGeneration[i] = [];
             for (let j = 0; j < state.paramGrid.field[i].length; j++) {
                 // Счетаем живых
                 state.paramGrid.field[i][j] === "black" ? allLive++ : '';
@@ -83,40 +97,43 @@ export default function fintEvents(state = initialState, action) {
                     for (let j1 = j - 1; j1 <= j + 1; j1++) {
                         if (i1 !== i || j1 !== j) {
                             if (i1 >= 0 && i1 <= state.paramGrid.valueN - 1 && j1 >= 0 && j1 <= state.paramGrid.valueM - 1) {
-                                // console.log("точка", i, ":", j, "!", "сосед", i1, ":", j1);
                                 state.paramGrid.field[i1][j1] === "black" ? live++ : live;
                             }
                         }
                     }
                 }
-                // console.log("Точка: ", i, j, "Живых:", live);
                 if (state.paramGrid.field[i][j] === 'white' && live === 3) {
-                    state.paramGrid.field[i][j] = 'black';
+                    newGeneration[i][j] = 'black';
                 }
                 else if (state.paramGrid.field[i][j] === 'black' && (live === 2 || live === 3)) {
-                    state.paramGrid.field[i][j] = 'black';
+                    newGeneration[i][j] = 'black';
                 }
                 else if (state.paramGrid.field[i][j] === 'black' && (live < 2 || live > 3)) {
-                    state.paramGrid.field[i][j] = 'white';
+                    newGeneration[i][j] = 'white';
                 }
-               
+                else {
+                    newGeneration[i][j] = 'white';
+                }
 
             }
         }
-        console.log(allLive);
+
         if (allLive === 0) { state.paramGrid.stop = true; }
-        // let copy = false;
-        // for (let i = 0; i < oldGeneration.length; i++) {
-        //     for (let j = 0; j < oldGeneration[i].length; j++) {
-        //         if (state.paramGrid.field[i][j] !== oldGeneration[i][j]) {
-        //             copy = true;
-        //             break;
-        //         }
-        //     }
-        //     if (copy) { break; }
-        // }
-        // if (!copy) { state.paramGrid.stop = true; }
-        // state.paramGrid.stop = true;
+        let copy = false;
+        for (let i = 0; i < state.paramGrid.field.length; i++) {
+            for (let j = 0; j < state.paramGrid.field[i].length; j++) {
+                if (state.paramGrid.field[i][j] !== newGeneration[i][j]) {
+                    copy = true;
+                    break;
+                }
+            }
+            if (copy) { break; }
+        }
+
+        if (copy === false) {
+            state.paramGrid.stop = true;
+        }
+        state.paramGrid.field = newGeneration;
         return {
             showModal: state.showModal,
             showField: state.showField,

@@ -10,7 +10,7 @@ class App extends Component {
         clearInterval(game);
         alert("Game over");
       }
-    }, 400);
+    }, 200);
   }
   stop() {
 

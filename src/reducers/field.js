@@ -8,8 +8,6 @@ const initialState = {
         btnClear: false,
         btnNewFiled: false,
 
-        oldGeneration: [],
-
         countGeneration: 0,
         stop: false,
 
@@ -62,11 +60,18 @@ export default function fintEvents(state = initialState, action) {
     if (action.type === 'NEXT_GENERATION') {
         state.paramGrid.countGeneration++;
         state.paramGrid.stop = false;
-        
-        console.log("old-0", state.paramGrid.oldGeneration);
-        state.paramGrid.oldGeneration = state.paramGrid.field.slice();
-        console.log("old-1", state.paramGrid.oldGeneration);
-        
+        // Копируем старые массив
+        const oldGeneration = (() => {
+            let arr = [];
+            for (let i = 0; i < state.paramGrid.field.length; i++) {
+                arr[i] = [];
+                for (let j = 0; j < state.paramGrid.field[i].length; j++) {
+                    arr[i][j] = state.paramGrid.field[i][j];
+                }
+            }
+            return arr;
+        })();
+
         let allLive = 0;
         for (let i = 0; i < state.paramGrid.field.length; i++) {
             for (let j = 0; j < state.paramGrid.field[i].length; j++) {
@@ -84,28 +89,33 @@ export default function fintEvents(state = initialState, action) {
                         }
                     }
                 }
-                if (state.paramGrid.field[i][j] === 'white' && live === 3) { state.paramGrid.field[i][j] = 'black' }
-                else if (state.paramGrid.field[i][j] === 'black' && (live === 2 || live === 3)) { state.paramGrid.field[i][j] = 'black' }
-                else { state.paramGrid.field[i][j] = 'white' }
-
+                // console.log("Точка: ", i, j, "Живых:", live);
+                if (state.paramGrid.field[i][j] === 'white' && live === 3) {
+                    state.paramGrid.field[i][j] = 'black';
+                }
+                else if (state.paramGrid.field[i][j] === 'black' && (live === 2 || live === 3)) {
+                    state.paramGrid.field[i][j] = 'black';
+                }
+                else if (state.paramGrid.field[i][j] === 'black' && (live < 2 || live > 3)) {
+                    state.paramGrid.field[i][j] = 'white';
+                }
+               
 
             }
         }
-        // console.log("живых", allLive);
-        // console.log("old", oldGeneration);
-        console.log("new", state.paramGrid.field);
-        // if (allLive === 0) { state.paramGrid.countGeneration = 0; state.paramGrid.stop = true; }
-        let copy = false;
+        console.log(allLive);
+        if (allLive === 0) { state.paramGrid.stop = true; }
+        // let copy = false;
         // for (let i = 0; i < oldGeneration.length; i++) {
         //     for (let j = 0; j < oldGeneration[i].length; j++) {
-        //         if(state.paramGrid.field[i][j] !== oldGeneration[i][j]){
+        //         if (state.paramGrid.field[i][j] !== oldGeneration[i][j]) {
         //             copy = true;
         //             break;
         //         }
         //     }
-        //     if(copy){break};
+        //     if (copy) { break; }
         // }
-        console.log("copy", copy);
+        // if (!copy) { state.paramGrid.stop = true; }
         // state.paramGrid.stop = true;
         return {
             showModal: state.showModal,
